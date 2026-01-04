@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Créer API Dynamique</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h1>Créer un modèle ou une fonction</h1>
+
+    <form id="apiForm">
+        <label>Nom de l'API :</label><br>
+        <input type="text" name="name" required><br>
+
+        <label>Type :</label><br>
+        <select name="type" required>
+            <option value="table">Table</option>
+            <option value="function">Fonction</option>
+        </select><br>
+
+        <label>Nom du modèle (optionnel pour fonction) :</label><br>
+        <input type="text" name="model_name"><br>
+
+        <label>Schema (JSON) :</label><br>
+        <textarea name="schema" rows="5">{}</textarea><br>
+
+        <label>Endpoint :</label><br>
+        <input type="text" name="endpoint" placeholder="ex: my_endpoint" required><br>
+
+        <label>Méthode HTTP :</label><br>
+        <select name="method">
+            <option value="GET">GET</option>
+            <option value="POST">POST</option>
+        </select><br>
+
+        <label>Permission :</label><br>
+        <select name="permission">
+            <option value="private">Privée (JWT requis)</option>
+            <option value="public">Publique</option>
+        </select><br><br>
+
+        <button type="submit">Créer API</button>
+    </form>
+
+    <hr>
+
+    <div id="result" style="margin-top:20px;"></div>
+
+    <script>
+        // Soumission du formulaire via fetch
+        document.getElementById('apiForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const form = e.target;
+            const data = {
+                name: form.name.value,
+                type: form.type.value,
+                model_name: form.model_name.value,
+                schema: form.schema.value,
+                endpoint: form.endpoint.value,
+                method: form.method.value,
+                permission: form.permission.value
+            };
+
+            try {
+                const res = await fetch('/api_manager/create', {
+                    method: 'POST',
+                    headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify(data)
+                });
+
+                const result = await res.json();
+                document.getElementById('result').innerText = result.message || JSON.stringify(result);
+
+                // Réinitialiser le formulaire si succès
+                if(res.ok) form.reset();
+
+            } catch (err) {
+                document.getElementById('result').innerText = "Erreur : " + err;
+            }
+        });
+    </script>
+</body>
+</html>

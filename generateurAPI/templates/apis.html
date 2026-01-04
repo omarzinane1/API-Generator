@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Liste des APIs Dynamiques</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h1>Historique des APIs</h1>
+
+    <table border="1" cellpadding="5" cellspacing="0">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nom</th>
+                <th>Type</th>
+                <th>Modèle</th>
+                <th>Endpoint</th>
+                <th>Méthode</th>
+                <th>Active</th>
+                <th>Permission</th>
+                <th>Date création</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="apisTableBody">
+            <!-- Contenu généré par JS -->
+        </tbody>
+    </table>
+
+    <script>
+        // Charger toutes les APIs
+        async function loadApis() {
+            const res = await fetch('/api_manager/list');
+            const apis = await res.json();
+            const tbody = document.getElementById('apisTableBody');
+            tbody.innerHTML = "";
+
+            apis.forEach(api => {
+                const tr = document.createElement('tr');
+
+                tr.innerHTML = `
+                    <td>${api.id}</td>
+                    <td>${api.name}</td>
+                    <td>${api.type}</td>
+                    <td>${api.model_name || '-'}</td>
+                    <td>${api.endpoint}</td>
+                    <td>${api.method}</td>
+                    <td>${api.active ? 'Oui' : 'Non'}</td>
+                    <td>${api.permission}</td>
+                    <td>${api.date_created}</td>
+                    <td>
+                        <button onclick="toggleApi(${api.id})">${api.active ? 'Désactiver' : 'Activer'}</button>
+                        <button onclick="editApi(${api.id})">Modifier</button>
+                        <button onclick="deleteApi(${api.id})">Supprimer</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Activer/Désactiver API
+        async function toggleApi(id) {
+            const res = await fetch(`/api_manager/toggle/${id}`, {method: 'POST'});
+            const result = await res.json();
+            alert(result.message || JSON.stringify(result));
+            loadApis();
+        }
+
+        // Supprimer API
+        async function deleteApi(id) {
+            if(!confirm("Voulez-vous vraiment supprimer cette API ?")) return;
+            const res = await fetch(`/api_manager/delete/${id}`, {method: 'DELETE'});
+            const result = await res.json();
+            alert(result.message || JSON.stringify(result));
+            loadApis();
+        }
+
+        // Modifier API (prompt simple)
+        async function editApi(id) {
+            const name = prompt("Nouveau nom API :");
+            const schema = prompt("Nouveau schema JSON :", "{}");
+            const method = prompt("Nouvelle méthode (GET/POST) :", "GET");
+            const permission = prompt("Nouvelle permission (private/public) :", "private");
+
+            if(!name) return;
+
+            const res = await fetch(`/api_manager/edit/${id}`, {
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({name, schema, method, permission})
+            });
+
+            const result = await res.json();
+            alert(result.message || JSON.stringify(result));
+            loadApis();
+        }
+
+        // Charger les APIs au chargement de la page
+        window.onload = loadApis;
+    </script>
+</body>
+</html>

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Connexion Utilisateur</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h1>Connexion</h1>
+
+    <form id="loginForm">
+        <label>Nom d'utilisateur :</label><br>
+        <input type="text" name="username" required><br>
+
+        <label>Mot de passe :</label><br>
+        <input type="password" name="password" required><br><br>
+
+        <button type="submit">Se connecter</button>
+    </form>
+
+    <div id="result" style="margin-top:20px;"></div>
+
+    <p>Pas de compte ? <a href="/signup_page">Créer un compte</a></p>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const form = e.target;
+
+            const data = {
+                username: form.username.value,
+                password: form.password.value
+            };
+
+            try {
+                const res = await fetch('/auth/login', {
+                    method: 'POST',
+                    headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify(data)
+                });
+
+                const result = await res.json();
+
+                if(res.ok) {
+                    // Stockage du token dans localStorage pour usage futur
+                    localStorage.setItem('token', result.token);
+                    document.getElementById('result').innerText = "Connexion réussie !";
+                    // Redirection vers la page d'accueil API
+                    setTimeout(() => window.location.href = '/', 1000);
+                } else {
+                    document.getElementById('result').innerText = result.error || "Erreur inconnue";
+                }
+            } catch (err) {
+                document.getElementById('result').innerText = "Erreur : " + err;
+            }
+        });
+    </script>
+</body>
+</html>
