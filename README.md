@@ -69,6 +69,7 @@ pip install -r requirements.txt
 3. Créer un fichier .env à la racine :
 
 SECRET_KEY=super-secret-key
+
 MONGO_URI=mongodb://localhost:27017/generateur_api
 
 
