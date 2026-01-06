@@ -20,7 +20,7 @@ interface FunctionSuccessPanelProps {
     id: string
     name: string
     endpoint?: string
-    parameters?: Parameter[]   // 👈 IMPORTANT
+    parameters?: Parameter[]   
   }
 }
 
@@ -32,9 +32,9 @@ export function FunctionSuccessPanel({ functionData }: FunctionSuccessPanelProps
 
   const apiUrl = `${
     process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000/api"
-  }/functions/${functionData.id}/execute`
+  }/functions/${functionData.id}`
 
-  // ✅ SAFE DEFAULT
+  //  SAFE DEFAULT
   const parameters: Parameter[] = functionData.parameters ?? []
 
   const exampleRequest = JSON.stringify(

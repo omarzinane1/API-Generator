@@ -23,9 +23,9 @@ def execute_safely(code: str, payload: dict):
             "range": range,
             "enumerate": enumerate,
             "zip": zip,
-            "Exception": Exception,      # <== nécessaire pour try/except
-            "ValueError": ValueError,    # <== si tu utilises ValueError
-            "TypeError": TypeError,      # <== si tu utilises TypeError
+            "Exception": Exception,
+            "ValueError": ValueError,
+            "TypeError": TypeError,
         }
     }
 
@@ -45,8 +45,23 @@ def execute_safely(code: str, payload: dict):
         if not isinstance(payload, dict):
             raise ValueError("Payload must be a dictionary.")
 
+        # --- Conversion automatique des valeurs numériques si elles ressemblent à des nombres ---
+        converted_payload = {}
+        for k, v in payload.items():
+            if isinstance(v, str):
+                try:
+                    if "." in v:
+                        converted_payload[k] = float(v)
+                    else:
+                        converted_payload[k] = int(v)
+                except ValueError:
+                    # Si ce n'est pas un nombre, garder la valeur telle quelle
+                    converted_payload[k] = v
+            else:
+                converted_payload[k] = v
+
         # Appeler la fonction avec le payload fourni
-        result = func(**payload)
+        result = func(**converted_payload)
         return result
 
     except Exception as e:

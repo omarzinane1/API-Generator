@@ -45,12 +45,7 @@ export default function TestApiPage() {
       setIsLoading(true)
       setError("")
       const data: any = await apiService.getFunction(functionId)
-      
-      console.log("=== FUNCTION DATA ===", data)
-      
-      // Le backend renvoie {function: {...}}, donc on accède à data.function
       const functionDetails = data.function || data
-      
       setFunctionData(functionDetails)
 
       // Initialize parameter values
@@ -81,31 +76,10 @@ export default function TestApiPage() {
     setTestResult(null)
     setIsTesting(true)
 
-    // Si pas de paramètres, envoyer un objet vide
-    if (!functionData.parameters || functionData.parameters.length === 0) {
-      try {
-        const response = await apiService.testFunction(functionId, {})
-        setTestResult({
-          request: {},
-          response: response,
-        })
-      } catch (err: any) {
-        setTestResult({
-          request: {},
-          response: null,
-          error: err.message || "API request failed",
-        })
-      } finally {
-        setIsTesting(false)
-      }
-      return
-    }
-
     // Validate required parameters
     const missingRequired = functionData.parameters
       .filter((p) => p.required && (parameterValues[p.name] === "" || parameterValues[p.name] === undefined))
       .map((p) => p.name)
-
     if (missingRequired.length > 0) {
       setTestResult({
         request: parameterValues,
@@ -117,11 +91,14 @@ export default function TestApiPage() {
     }
 
     try {
-      const response = await apiService.testFunction(functionId, parameterValues)
-
+      const response = await apiService.testFunction(
+        functionId,
+        parameterValues,
+        functionData.api_key || ""
+      )
       setTestResult({
         request: parameterValues,
-        response: response,
+        response,
       })
     } catch (err: any) {
       setTestResult({
@@ -136,10 +113,8 @@ export default function TestApiPage() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 flex justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     )
   }
@@ -179,8 +154,8 @@ export default function TestApiPage() {
             <CardHeader>
               <CardTitle>Test Parameters</CardTitle>
               <CardDescription>
-                {hasParameters 
-                  ? "Enter values for the function parameters" 
+                {hasParameters
+                  ? "Enter values for the function parameters"
                   : "This function has no input parameters"}
               </CardDescription>
             </CardHeader>
@@ -189,7 +164,7 @@ export default function TestApiPage() {
                 <DynamicTestForm
                   parameters={functionData.parameters.map(p => ({
                     ...p,
-                    required: p.required ?? true  // Par défaut true si undefined
+                    required: p.required ?? true
                   }))}
                   values={parameterValues}
                   onValuesChange={setParameterValues}

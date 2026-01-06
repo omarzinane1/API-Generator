@@ -32,7 +32,7 @@ export function ApiInfoModal({ isOpen, onClose, functionData }: ApiInfoModalProp
   
   // Construire l'URL de l'API
   const apiUrl = functionData.endpoint || 
-    `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000/api"}/functions/${functionData.id}/execute`
+    `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000/api"}/functions/${functionData.id}`
 
   // Créer un exemple de payload basé sur les paramètres
   const examplePayload = JSON.stringify(

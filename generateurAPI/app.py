@@ -35,7 +35,7 @@ def create_app():
         app,
         resources={r"/api/*": {"origins": ["http://localhost:3000"]}},  # Frontend Next.js
         supports_credentials=True,
-        allow_headers=["Content-Type", "Authorization"],
+        allow_headers=["Content-Type", "Authorization","x-api-key"],
         methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"]
     )
 

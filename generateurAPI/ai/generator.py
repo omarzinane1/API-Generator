@@ -1,64 +1,69 @@
 import os
-import openai
-from openai.error import RateLimitError, OpenAIError
+from groq import Groq
 from config import Config
 
 # ==========================
-# Initialisation OpenAI
+# Initialisation du client Groq
 # ==========================
-openai.api_key = Config.OPENAI_API_KEY
+client = Groq(api_key=Config.GROQ_API_KEY)
 
-# Modèle compatible avec openai==0.28.1
-MODEL = "gemini-2.5-flash"
+# Modèle Groq par défaut
+MODEL = "llama-3.3-70b-versatile"  # Alternatives : "mixtral-8x7b-32768", "llama-3.1-70b-versatile"
 
 
-def generate_code(name: str, inputs: dict, description: str, output_type: str) -> str:
+def generate_code(name: str, inputs: list, description: str, output_type: str) -> str:
     """
-    Génère le code Python d'une fonction via OpenAI
+    Génère le code Python d'une fonction via Groq.
+
+    Args:
+        name (str): Nom de la fonction
+        inputs (list): Liste des noms des paramètres
+        description (str): Description de la logique de la fonction
+        output_type (str): Type de retour attendu
+
+    Returns:
+        str: Code Python généré prêt à exécuter
     """
+
+    # Transformer la liste inputs en string "param1, param2, ..."
+    inputs_str = ", ".join(inputs)
 
     prompt = f"""
-Génère uniquement une fonction Python nommée {name}.
+Génère uniquement une fonction Python sécurisée nommée '{name}'.
 
-Règles :
-- Arguments : {inputs}
+Règles strictes :
+- Arguments : {inputs_str}
 - Logique : {description}
 - Type de retour : {output_type}
 - Pas d'importations
 - Pas de print
-- Retourne uniquement le code Python
-
-Exemple :
-def {name}(...):
-    return ...
+- Retourne uniquement le code Python prêt à exec(), sans markdown ni backticks
+- Ajoute un docstring clair décrivant les paramètres et le retour
+- N'inclut pas de code global, seulement la fonction
 """
 
     try:
-        response = openai.ChatCompletion.create(
-            model=MODEL,
+        chat_completion = client.chat.completions.create(
             messages=[{"role": "user", "content": prompt}],
-            temperature=0
+            model=MODEL,
+            temperature=0,  # deterministic
+            max_tokens=1024,
         )
 
-        return response.choices[0].message["content"].strip()
+        code = chat_completion.choices[0].message.content.strip()
 
-    except RateLimitError:
-        # Quota dépassée
-        return (
-            f"def {name}():\n"
-            f"    raise Exception('Quota OpenAI dépassée. Vérifiez votre billing.')"
-        )
+        # Nettoyer le code de tout markdown accidentel
+        if code.startswith("```python"):
+            code = code.replace("```python", "").replace("```", "").strip()
+        elif code.startswith("```"):
+            code = code.replace("```", "").strip()
 
-    except OpenAIError as e:
-        # Erreur OpenAI générique
-        return (
-            f"def {name}():\n"
-            f"    raise Exception('Erreur OpenAI : {str(e)}')"
-        )
+        return code
 
     except Exception as e:
-        # Erreur backend
+        # Retourne un code d'exception prêt à exécuter si Groq échoue
+        print(f"[Groq Error] {e}")
         return (
-            f"def {name}():\n"
-            f"    raise Exception('Erreur serveur : {str(e)}')"
+            f"def {name}({inputs_str}):\n"
+            f"    raise Exception('Erreur Groq : {str(e)}')"
         )
