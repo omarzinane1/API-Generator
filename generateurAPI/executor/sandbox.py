@@ -26,6 +26,9 @@ def execute_safely(code: str, payload: dict):
             "Exception": Exception,
             "ValueError": ValueError,
             "TypeError": TypeError,
+            "int": int,     
+            "float": float,
+            "str": str  
         }
     }
 

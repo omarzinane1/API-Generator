@@ -27,12 +27,12 @@ export function ApiInfoModal({ isOpen, onClose, functionData }: ApiInfoModalProp
   const [copiedToken, setCopiedToken] = useState(false)
   const [copiedExample, setCopiedExample] = useState(false)
 
-  // Utiliser api_key du backend au lieu du token JWT
+  //  api_key du backend au lieu du token JWT
   const apiToken = functionData.api_key || "No API key available"
   
   // Construire l'URL de l'API
   const apiUrl = functionData.endpoint || 
-    `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000/api"}/functions/${functionData.id}`
+    `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000/api"}/functions/${apiToken}`
 
   // Créer un exemple de payload basé sur les paramètres
   const examplePayload = JSON.stringify(

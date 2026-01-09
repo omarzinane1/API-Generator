@@ -45,7 +45,6 @@ export default function MyApisPage() {
       setIsLoading(false)
     }
   }
-  console.log(functions)
   const handleDelete = async (id: string) => {
     setDeleteId(id)
     try {

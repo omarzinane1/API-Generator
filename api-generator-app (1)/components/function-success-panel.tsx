@@ -17,10 +17,11 @@ interface Parameter {
 
 interface FunctionSuccessPanelProps {
   functionData: {
+    api_key: string
     id: string
     name: string
     endpoint?: string
-    parameters?: Parameter[]   
+    parameters?: Parameter[]
   }
 }
 
@@ -29,10 +30,10 @@ export function FunctionSuccessPanel({ functionData }: FunctionSuccessPanelProps
   const [copiedToken, setCopiedToken] = useState(false)
 
   const token = authService.getToken()
-
-  const apiUrl = `${
-    process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000/api"
-  }/functions/${functionData.id}`
+  //  api_key du backend au lieu du token JWT
+  const apiToken = functionData.api_key || "No API key available"
+  const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000/api"
+    }/functions/${apiToken}`
 
   //  SAFE DEFAULT
   const parameters: Parameter[] = functionData.parameters ?? []
@@ -44,10 +45,10 @@ export function FunctionSuccessPanel({ functionData }: FunctionSuccessPanelProps
           param.type === "string"
             ? "example_value"
             : param.type === "number"
-            ? 42
-            : param.type === "boolean"
-            ? true
-            : null
+              ? 42
+              : param.type === "boolean"
+                ? true
+                : null
         return acc
       }, {}),
     },
@@ -132,7 +133,7 @@ export function FunctionSuccessPanel({ functionData }: FunctionSuccessPanelProps
             Ready for external usage
           </p>
           <p className="text-sm text-muted-foreground">
-            Use this API in Postman, cURL, or any HTTP client.  
+            Use this API in Postman, cURL, or any HTTP client.
             Authorization: Bearer TOKEN
           </p>
         </div>
